@@ -6,18 +6,20 @@
 //       run script and browse to http://127.0.0.1:8000 (default).
 
 
-//import io from 'socket.io-client'
-//require('socket.io-client');
+//import socket.io
 const io = require('socket.io-client');
 
-
+//import http, url
 const http = require('http');
 const url = require('url');
 
+//your settings, modify if necessary
 const hostname = '127.0.0.1';
 const port = 8000;
 const API_URI = 'https://api.satoshis.place/';
 
+
+//global vars. bad practice.
 global.global_res = null;
 global.latest_orders_settled = [];
 
@@ -86,11 +88,6 @@ socket.on('disconnect', () => {
 	console.log('Disconnected, trying to reconnect...');
 	socket.open();
 });
-
-// Here's two examples on how you send a request, the response will be
-// in the callbacks above.
-
-//socket.emit('NEW_ORDER', pixelsArray)
 ///////////
 
 
@@ -133,7 +130,8 @@ const server = http.createServer((req, res) => {
 				|| (jsonquery.command == 'GET_SETTINGS')
 				|| (jsonquery.command == 'NEW_ORDER')
 			) {
-				global_res = res; //make this http query respond var global so our event listener can reply to it
+				global_res = res; //make this http query respond var global so our
+									//event listener can reply to it. this is a bad practice!
 				socket.emit(jsonquery.command, jsonquery.payload); //emit query to api
 				return;
 			} else if (jsonquery.command == 'latest_orders_settled') {
@@ -155,30 +153,12 @@ const server = http.createServer((req, res) => {
 	res.statusCode = 404;
 	res.setHeader('Content-Type', 'text/plain');
 	res.end('Endpoint not found.. Weird!\n');
-	//socket.emit('GET_LATEST_PIXELS')
+	return;
 });
 
 server.listen(port, hostname, () => {
 	console.log(`Server hosting JSON REST API running at http://${hostname}:${port}/`);
 });
-
-
-function sleep(ms){
-    return new Promise(resolve=>{
-        setTimeout(resolve,ms)
-    })
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
