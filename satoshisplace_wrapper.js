@@ -76,6 +76,7 @@ function handleReceivedEvent(result, callback) {
 }
 
 function handleReceivedEvent_ORDER_SETTLED(result, callback) {
+	console.log("handleReceivedEvent_ORDER_SETTLED");
 	if (result.error) {
 		console.log(result);
 	} else {
