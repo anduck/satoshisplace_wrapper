@@ -108,7 +108,7 @@ const server = http.createServer((req, res) => {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/plain');
 		res.write('Usage:\n\nUse GET query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"} in base64 encoding');
-		res.write('\nGET /?json={"command":"COMMAND", "payload":"PAYLOAD"}\nExample: GET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
+		res.write('\nGET /?json=BASE64_ENCODED_JSON\nExample: GET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
 		res.end('\n');
 		return;
 	} else {
