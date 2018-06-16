@@ -107,12 +107,20 @@ const server = http.createServer((req, res) => {
 	if (typeof queryData.json === 'undefined' || queryData.json === null) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/plain');
-		res.write('Usage:\n\nUse GET query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"}');
-		res.write('\nGET /?json={"command":"COMMAND", "payload":"PAYLOAD"}\nExample: GET /?json={"command":"GET_LATEST_PIXELS", "payload":""}');
+		res.write('Usage:\n\nUse GET query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"} in base64 encoding');
+		res.write('\nGET /?json={"command":"COMMAND", "payload":"PAYLOAD"}\nExample: GET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
 		res.end('\n');
 		return;
 	} else {
-		var jsonquery = JSON.parse(queryData.json);
+		try {
+			var jsonquery = JSON.parse(Buffer.from(queryData.json, 'base64').toString('ascii'));
+			console.log(jsonquery);
+		} catch(error) {
+			res.statusCode = 400;
+			res.setHeader('Content-Type', 'text/plain');
+			res.end('Error in json: '+error+'\n');
+			return;
+		}
 		if (typeof jsonquery.command === 'undefined' || jsonquery.command === null) {
 			res.statusCode = 404;
 			res.setHeader('Content-Type', 'text/plain');
