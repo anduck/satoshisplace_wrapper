@@ -110,10 +110,7 @@ const server = http.createServer((req, res) => {
 		handle_response(res, queryData);
 		return;
 	} else if (req.method == 'POST') {
-		/*processPost(req, res, function() {
-            console.log(req.post);
-			var queryData = req.post;
-        });*/
+		//https://stackoverflow.com/questions/4295782/how-do-you-extract-post-data-in-node-js
         var queryDatatemp = "";
         req.on('data', function(data) {
             queryDatatemp += data;
@@ -210,32 +207,6 @@ function handle_response(res, queryData) {
 	return;
 }
 
-
-//https://stackoverflow.com/questions/4295782/how-do-you-extract-post-data-in-node-js
-function processPost(request, response, callback) {
-    var queryData = "";
-    if(typeof callback !== 'function') return null;
-
-    if(request.method == 'POST') {
-        request.on('data', function(data) {
-            queryData += data;
-            if(queryData.length > 5e7) { //50MB
-                queryData = "";
-                response.writeHead(413, {'Content-Type': 'text/plain'}).end();
-                request.connection.destroy();
-            }
-        });
-
-        request.on('end', function() {
-            request.post = querystring.parse(queryData);
-            callback();
-        });
-
-    } else {
-        response.writeHead(405, {'Content-Type': 'text/plain'});
-        response.end();
-    }
-}
 
 
 
