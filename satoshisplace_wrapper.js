@@ -4,7 +4,7 @@
 //       install nodejs and npm  (node package manager)
 //       install socket.io-client: npm install socket.io-client
 //       run script and browse to http://127.0.0.1:8000 (default).
-
+//		use GET or POST
 
 //import socket.io
 const io = require('socket.io-client');
@@ -12,6 +12,8 @@ const io = require('socket.io-client');
 //import http, url
 const http = require('http');
 const url = require('url');
+const querystring = require('querystring');
+
 
 //your settings, modify if necessary
 const hostname = '127.0.0.1';
@@ -51,7 +53,7 @@ socket.on('connect', a => {
 	
 })
 
-function handleReceivedEvent(result, callback) {
+function handleReceivedEvent(result) {
 	//console.log(result);
 	console.log("handleReceivedEvent");
 	if (global_res == null) {
@@ -75,7 +77,7 @@ function handleReceivedEvent(result, callback) {
 	return;
 }
 
-function handleReceivedEvent_ORDER_SETTLED(result, callback) {
+function handleReceivedEvent_ORDER_SETTLED(result) {
 	console.log("handleReceivedEvent_ORDER_SETTLED");
 	if (result.error) {
 		console.log(result);
@@ -103,12 +105,55 @@ const server = http.createServer((req, res) => {
 		return;
 	}
 	
-	var queryData = url.parse(req.url, true).query;
-	if (typeof queryData.json === 'undefined' || queryData.json === null) {
+	if (req.method == 'GET') {
+		var queryData = url.parse(req.url, true).query;
+		handle_response(res, queryData);
+		return;
+	} else if (req.method == 'POST') {
+		/*processPost(req, res, function() {
+            console.log(req.post);
+			var queryData = req.post;
+        });*/
+        var queryDatatemp = "";
+        req.on('data', function(data) {
+            queryDatatemp += data;
+            if(queryDatatemp.length > 5e7) { //50MB
+                queryDatatemp = "";
+                res.writeHead(413, {'Content-Type': 'text/plain'}).end();
+                req.connection.destroy();
+            }
+        });
+
+        req.on('end', function() {
+			var queryData = querystring.parse(queryDatatemp);
+            handle_response(res, queryData);
+			return;
+        });
+	} else {
+		res.statusCode = 400;
+		res.setHeader('Content-Type', 'text/plain');
+		res.end('Error: only GET and POST are supported.\n');
+		return;
+	}
+	
+});
+
+server.listen(port, hostname, () => {
+	console.log(`Server hosting JSON REST API running at http://${hostname}:${port}/`);
+});
+
+
+
+function handle_response(res, queryData) {
+	
+	if ((typeof queryData === 'undefined' || queryData === null)
+		|| (typeof queryData.json === 'undefined' || queryData.json === null)) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/plain');
 		res.write('Usage:\n\nUse GET query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"} in base64 encoding');
-		res.write('\nGET /?json=BASE64_ENCODED_JSON\nExample: GET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
+		res.write('\nGET /?json=BASE64_ENCODED_JSON\nExamples:\n');
+		res.write('json = {"command":"GET_LATEST_PIXELS", "payload":""}\nbase-64 encodes to:\nGET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
+		res.write('\njson = {"command":"GET_SETTINGS", "payload":""}\nbase-64 encodes to:\nGET /?json='+Buffer.from('{"command":"GET_SETTINGS", "payload":""}').toString('base64'));
 		res.end('\n');
 		return;
 	} else {
@@ -163,11 +208,34 @@ const server = http.createServer((req, res) => {
 	res.setHeader('Content-Type', 'text/plain');
 	res.end('Endpoint not found.. Weird!\n');
 	return;
-});
+}
 
-server.listen(port, hostname, () => {
-	console.log(`Server hosting JSON REST API running at http://${hostname}:${port}/`);
-});
+
+//https://stackoverflow.com/questions/4295782/how-do-you-extract-post-data-in-node-js
+function processPost(request, response, callback) {
+    var queryData = "";
+    if(typeof callback !== 'function') return null;
+
+    if(request.method == 'POST') {
+        request.on('data', function(data) {
+            queryData += data;
+            if(queryData.length > 5e7) { //50MB
+                queryData = "";
+                response.writeHead(413, {'Content-Type': 'text/plain'}).end();
+                request.connection.destroy();
+            }
+        });
+
+        request.on('end', function() {
+            request.post = querystring.parse(queryData);
+            callback();
+        });
+
+    } else {
+        response.writeHead(405, {'Content-Type': 'text/plain'});
+        response.end();
+    }
+}
 
 
 
