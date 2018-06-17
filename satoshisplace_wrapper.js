@@ -147,7 +147,7 @@ function handle_response(res, queryData) {
 		|| (typeof queryData.json === 'undefined' || queryData.json === null)) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/plain');
-		res.write('Usage:\n\nUse GET query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"} in base64 encoding');
+		res.write('Usage:\n\nUse GET/POST query with \'json\' as the paremeter. \'json\' is of format: {"command":"COMMAND", "payload":"PAYLOAD"} encoded to base64');
 		res.write('\nGET /?json=BASE64_ENCODED_JSON\nExamples:\n');
 		res.write('json = {"command":"GET_LATEST_PIXELS", "payload":""}\nbase-64 encodes to:\nGET /?json='+Buffer.from('{"command":"GET_LATEST_PIXELS", "payload":""}').toString('base64'));
 		res.write('\njson = {"command":"GET_SETTINGS", "payload":""}\nbase-64 encodes to:\nGET /?json='+Buffer.from('{"command":"GET_SETTINGS", "payload":""}').toString('base64'));
