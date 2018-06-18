@@ -142,10 +142,10 @@ while (1) {
 		curl_close ($ch);
 
 		echo "RESPONSE: ".$response."\n--------------------\n";
-		
 		//automatic payment of paymentRequest
 		$response = json_decode($response, true);
 		$paymentRequest = $response['data']['paymentRequest'];
+		echo "PaymentRequest: ".$paymentRequest."\n";
 		if (defined('PAY_PAYMENTREQUEST_COMMAND'))
 			exec(PAY_PAYMENTREQUEST_COMMAND.$paymentRequest);
 		
