@@ -11,14 +11,17 @@ if (!$testGD) {
 }
 
 define('APISERVER', 'http://localhost:8000/');
-define('INTERVAL', 600); //fetch canvas every 600sec and check if our painting has changed
+define('INTERVAL', 600); //fetch canvas every X sec and check if our painting has changed
+
+//uncomment and modify to enable automatic LN payments
+define('PAY_PAYMENTREQUEST_COMMAND','lncli sendpayment --pay_req=');
 
 //coordinate (0,0) is the upper left corner
-define('COORDX', 620); //coordinate X
-define('COORDY', 550); //coordinate Y
+define('COORDX', 0); //coordinate X
+define('COORDY', 0); //coordinate Y
 
 //our image to be drawn on the canvas
-define('IMAGE', 'goat.png');
+define('IMAGE', 'image.png');
 
 //transparent color
 define('TRANSPARENT_COLOR', '#e400ff'); //magenta
@@ -72,7 +75,8 @@ for ($x=0; $x<$image_width; $x++) {
 		imagesetpixel($image, $x, $y, $pxcolor);
 	}
 }
-//imagepng($image, "image.png");
+//uncomment to produce output of the palette-coloured image
+//imagepng($image, "output_image.png");
 
 
 
@@ -138,6 +142,13 @@ while (1) {
 		curl_close ($ch);
 
 		echo "RESPONSE: ".$response."\n--------------------\n";
+		
+		//automatic payment of paymentRequest
+		$response = json_decode($response, true);
+		$paymentRequest = $response['data']['paymentRequest'];
+		if (defined('PAY_PAYMENTREQUEST_COMMAND'))
+			exec(PAY_PAYMENTREQUEST_COMMAND.$paymentRequest);
+		
 	}
 	
 	echo "done loop. now sleeping for ".INTERVAL." seconds...\n";
