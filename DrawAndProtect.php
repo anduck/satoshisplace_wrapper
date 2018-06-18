@@ -4,6 +4,8 @@
 //needs satoshisplace_wrapper.js to query against
 //requires php-gd library and curl
 
+ini_set('memory_limit', '50M');
+
 $testGD = get_extension_funcs("gd");
 if (!$testGD) {
 	echo "GD not installed.\n";
@@ -22,6 +24,7 @@ define('COORDY', 0); //coordinate Y
 
 //our image to be drawn on the canvas
 define('IMAGE', 'image.png');
+if (file_exists(IMAGE)===false) exit("image not found.\n");
 
 //transparent color
 define('TRANSPARENT_COLOR', '#e400ff'); //magenta
@@ -76,9 +79,9 @@ for ($x=0; $x<$image_width; $x++) {
 	}
 }
 //uncomment to produce output of the palette-coloured image
-//imagepng($image, "output_image.png");
-
-
+imagepng($image, "output_image.png");
+echo "Starting bot..\n";
+sleep(2);
 
 
 while (1) {
@@ -113,6 +116,7 @@ while (1) {
 				$b = $pixelcolorA & 0xFF;
 				if (($r==$tr) && ($g==$tg) && ($b==$tb)) continue; //transparent px
 				$pixels_to_order[] = Array('coordinates'=>Array(COORDX+$x, COORDY+$y), 'color'=>sprintf("#%02x%02x%02x", $r, $g, $b));
+				if (sprintf("#%02x%02x%02x", $r, $g, $b)=="#000000") exit("found black.\n");
 			}
 		}
 	}
